@@ -6,7 +6,7 @@ import prisma from "./prisma";
 import bcrypt from "bcryptjs";
 
 export const authOptions: AuthOptions = {
-  // @ts-ignore
+  // @ts-expect-error - PrismaAdapter type mismatch in NextAuth v4/Prisma 7
   adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
@@ -59,6 +59,13 @@ export const authOptions: AuthOptions = {
     async session({ session, token }) {
       if (token?.sub && session.user) {
         session.user.id = token.sub;
+        // Fetch role from DB since token might not have it initially
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.sub }
+        });
+        if (dbUser) {
+          session.user.role = dbUser.role;
+        }
       }
       return session;
     },
