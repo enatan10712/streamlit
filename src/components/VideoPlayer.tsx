@@ -37,6 +37,8 @@ export default function VideoPlayer({ src, poster, title, subtitles, onProgress,
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hlsRef = useRef<Hls | null>(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -44,10 +46,6 @@ export default function VideoPlayer({ src, poster, title, subtitles, onProgress,
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [playbackRate, setPlaybackRate] = useState(1);
-  const [isFullScreen, setIsFullScreen] = useState(false);
-
-  let controlsTimeout: NodeJS.Timeout;
 
   useEffect(() => {
     const video = videoRef.current;
@@ -57,6 +55,8 @@ export default function VideoPlayer({ src, poster, title, subtitles, onProgress,
       const hls = new Hls();
       hls.loadSource(src);
       hls.attachMedia(video);
+      hlsRef.current = hls;
+
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         if (initialTime > 0) {
           video.currentTime = initialTime;
@@ -78,7 +78,7 @@ export default function VideoPlayer({ src, poster, title, subtitles, onProgress,
       if (onProgress) {
         onProgress({
           playedSeconds: video.currentTime,
-          played: video.currentTime / video.duration
+          played: video.currentTime / (video.duration || 1)
         });
       }
     };
@@ -93,8 +93,12 @@ export default function VideoPlayer({ src, poster, title, subtitles, onProgress,
     return () => {
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
     };
-  }, [src, initialTime]);
+  }, [src, initialTime, onProgress]);
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -136,10 +140,8 @@ export default function VideoPlayer({ src, poster, title, subtitles, onProgress,
 
     if (!document.fullscreenElement) {
       containerRef.current.requestFullscreen();
-      setIsFullScreen(true);
     } else {
       document.exitFullscreen();
-      setIsFullScreen(false);
     }
   };
 
@@ -151,9 +153,9 @@ export default function VideoPlayer({ src, poster, title, subtitles, onProgress,
 
   const handleMouseMove = () => {
     setShowControls(true);
-    clearTimeout(controlsTimeout);
-    controlsTimeout = setTimeout(() => {
-      if (isPlaying) setShowControls(false);
+    if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+    controlsTimeoutRef.current = setTimeout(() => {
+      if (videoRef.current && !videoRef.current.paused) setShowControls(false);
     }, 3000);
   };
 

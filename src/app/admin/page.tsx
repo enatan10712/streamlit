@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { Users, Film, CreditCard, TrendingUp } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import ContentManagement from "@/components/ContentManagement";
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
@@ -16,6 +17,13 @@ export default async function AdminDashboard() {
   const contentCount = await prisma.content.count();
   const activeSubs = await prisma.subscription.count({ where: { status: "active" } });
 
+  const content = await prisma.content.findMany({
+    include: { genres: true },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  const genres = await prisma.genre.findMany();
+
   const stats = [
     { label: "Total Users", value: userCount, icon: Users, color: "text-blue-500" },
     { label: "Active Subscriptions", value: activeSubs, icon: CreditCard, color: "text-green-500" },
@@ -26,25 +34,29 @@ export default async function AdminDashboard() {
   return (
     <div className="min-h-screen bg-[#0d0c1d]">
       <Navbar />
-      <div className="max-w-7xl mx-auto px-4 pt-32 pb-20">
-        <h1 className="text-3xl font-bold text-white mb-8">Admin Dashboard</h1>
+      <div className="max-w-7xl mx-auto px-4 pt-32 pb-20 space-y-12">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-8">Admin Dashboard</h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {stats.map((stat) => (
-            <div key={stat.label} className="bg-white/5 border border-white/10 p-6 rounded-2xl">
-              <div className="flex items-center justify-between mb-4">
-                <stat.icon className={`h-6 w-6 ${stat.color}`} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {stats.map((stat) => (
+              <div key={stat.label} className="bg-white/5 border border-white/10 p-6 rounded-2xl">
+                <div className="flex items-center justify-between mb-4">
+                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                </div>
+                <p className="text-gray-400 text-sm">{stat.label}</p>
+                <h2 className="text-3xl font-black text-white">{stat.value}</h2>
               </div>
-              <p className="text-gray-400 text-sm">{stat.label}</p>
-              <h2 className="text-3xl font-black text-white">{stat.value}</h2>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
+
+        <ContentManagement initialContent={content} genres={genres} />
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-xl font-bold text-white">Recent Users</h2>
-            <button className="text-primary text-sm font-bold hover:underline">View All</button>
+            <button className="text-[#7c3aed] text-sm font-bold hover:underline">View All</button>
           </div>
 
           <div className="overflow-x-auto">
@@ -62,7 +74,7 @@ export default async function AdminDashboard() {
                   <tr key={user.id}>
                     <td className="py-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">
+                        <div className="h-8 w-8 rounded-full bg-[#7c3aed]/20 flex items-center justify-center text-[#7c3aed] text-xs font-bold">
                           {user.name?.charAt(0).toUpperCase()}
                         </div>
                         <div className="text-white font-medium">{user.name || user.email}</div>

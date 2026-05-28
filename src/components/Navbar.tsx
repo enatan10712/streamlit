@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Bell, User, LogOut, ChevronDown, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,9 +17,14 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const { data: session } = useSession();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -32,6 +38,23 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
+  const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    if (value.trim().length >= 3) {
+      router.push(`/search?q=${encodeURIComponent(value)}`);
+    } else if (value.length === 0) {
+      router.push('/browse');
+    }
+  };
 
   return (
     <nav
@@ -60,11 +83,34 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-4 md:gap-6">
-          <div className="hidden md:flex items-center gap-4">
-            <button className="text-gray-300 hover:text-white transition-colors">
-              <Search className="h-5 w-5" />
-            </button>
-            <button className="text-gray-300 hover:text-white transition-colors">
+          <div className="flex items-center gap-4">
+            <form
+              onSubmit={handleSearch}
+              className={cn(
+                "flex items-center gap-2 px-2 py-1 rounded-full border border-white/10 bg-white/5 transition-all duration-300",
+                isSearchVisible ? "w-48 md:w-64 opacity-100" : "w-10 opacity-0 md:opacity-100 md:bg-transparent md:border-transparent"
+              )}
+            >
+              <button
+                type="button"
+                onClick={() => setIsSearchVisible(!isSearchVisible)}
+                className="text-gray-300 hover:text-white transition-colors"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+              <input
+                type="text"
+                placeholder="Titles, people, genres"
+                className={cn(
+                  "bg-transparent text-sm text-white outline-none placeholder-gray-500 w-full transition-all",
+                  isSearchVisible ? "opacity-100" : "opacity-0 pointer-events-none md:hidden"
+                )}
+                value={searchQuery}
+                onChange={onSearchChange}
+              />
+            </form>
+
+            <button className="hidden md:block text-gray-300 hover:text-white transition-colors">
               <Bell className="h-5 w-5" />
             </button>
           </div>
