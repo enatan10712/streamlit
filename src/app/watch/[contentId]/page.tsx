@@ -16,12 +16,23 @@ export default async function WatchPage({ params }: WatchPageProps) {
 
   const { contentId } = params;
 
-  // Fetch content details
+  // Fetch content and subscription status
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    include: { subscription: true }
+  });
+
+  const isActive = user?.subscription?.status === "active";
+  const tier = user?.subscription?.stripePriceId; // Simple tier check based on priceId
+
+  if (!isActive && !contentId.startsWith("mock-")) {
+    redirect("/subscribe");
+  }
+
   const content = await prisma.content.findUnique({
     where: { id: contentId },
   });
 
-  // For MVP/Demo purposes, if not found in DB, use mock
   if (!content && !contentId.startsWith("mock-")) {
     notFound();
   }
@@ -29,7 +40,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
   const videoData = content || {
     id: contentId,
     title: "Cosmic Signal",
-    videoUrl: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8", // Sample HLS stream
+    videoUrl: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
     thumbnailUrl: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2025&auto=format&fit=crop",
   };
 
