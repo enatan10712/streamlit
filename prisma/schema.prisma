@@ -1,0 +1,215 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SubscriptionTier {
+  BASIC
+  STANDARD
+  PREMIUM
+}
+
+enum ContentType {
+  MOVIE
+  TV_SHOW
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  hashedPassword String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  role          String    @default("USER")
+
+  accounts      Account[]
+  sessions      Session[]
+  profiles      Profile[]
+  subscription  Subscription?
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  name      String
+  image     String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  watchHistory WatchHistory[]
+  watchlist    Watchlist[]
+  ratings      Rating[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Subscription {
+  id                   String           @id @default(cuid())
+  userId               String           @unique
+  user                 User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier                 SubscriptionTier @default(BASIC)
+  stripeSubscriptionId String?          @unique
+  stripeCustomerId     String?          @unique
+  stripePriceId        String?
+  status               String?
+  currentPeriodEnd     DateTime?
+
+  payments Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Genre {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  contents Content[]
+}
+
+model Content {
+  id          String      @id @default(cuid())
+  title       String
+  description String
+  thumbnailUrl String
+  videoUrl    String?
+  duration    String?
+  type        ContentType
+  releaseDate DateTime?
+  rating      String?     @default("PG")
+
+  genres      Genre[]
+  seasons     Season[]
+  watchHistory WatchHistory[]
+  watchlist    Watchlist[]
+  ratings      Rating[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Season {
+  id           String    @id @default(cuid())
+  seasonNumber Int
+  contentId    String
+  content      Content   @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  episodes     Episode[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Episode {
+  id            String  @id @default(cuid())
+  title         String
+  description   String
+  videoUrl      String
+  thumbnailUrl  String
+  duration      String
+  episodeNumber Int
+  seasonId      String
+  season        Season  @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+
+  watchHistory WatchHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WatchHistory {
+  id        String   @id @default(cuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  contentId String?
+  content   Content? @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  episodeId String?
+  episode   Episode? @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+
+  watchedSeconds Int      @default(0)
+  isCompleted    Boolean  @default(false)
+  lastWatchedAt  DateTime @default(now())
+
+  @@unique([profileId, contentId, episodeId])
+}
+
+model Watchlist {
+  id        String  @id @default(cuid())
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  contentId String
+  content   Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([profileId, contentId])
+}
+
+model Rating {
+  id        String  @id @default(cuid())
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  contentId String
+  content   Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  value     Int     // 1 for like, -1 for dislike or 1-5 scale
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([profileId, contentId])
+}
+
+model Payment {
+  id             String       @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  amount         Int
+  currency       String
+  status         String
+  stripePaymentId String      @unique
+
+  createdAt DateTime @default(now())
+}
