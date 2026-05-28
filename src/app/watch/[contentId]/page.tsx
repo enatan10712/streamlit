@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
-import VideoPlayer from "@/components/VideoPlayer";
+import WatchClient from "@/components/WatchClient";
 
 interface WatchPageProps {
   params: {
@@ -16,14 +16,12 @@ export default async function WatchPage({ params }: WatchPageProps) {
 
   const { contentId } = params;
 
-  // Fetch content and subscription status
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     include: { subscription: true }
   });
 
   const isActive = user?.subscription?.status === "active";
-  const tier = user?.subscription?.stripePriceId; // Simple tier check based on priceId
 
   if (!isActive && !contentId.startsWith("mock-")) {
     redirect("/subscribe");
@@ -45,12 +43,10 @@ export default async function WatchPage({ params }: WatchPageProps) {
   };
 
   return (
-    <div className="h-screen w-screen bg-black overflow-hidden">
-      <VideoPlayer
-        src={videoData.videoUrl || "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"}
-        title={videoData.title}
-        poster={videoData.thumbnailUrl}
-      />
-    </div>
+    <WatchClient
+      videoUrl={videoData.videoUrl || "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"}
+      title={videoData.title}
+      poster={videoData.thumbnailUrl}
+    />
   );
 }
