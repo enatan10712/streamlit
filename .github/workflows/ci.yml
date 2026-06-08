@@ -1,4 +1,4 @@
-name: StreamVault CI
+name: Streamlit CI
 
 on:
   push:

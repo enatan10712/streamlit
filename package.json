@@ -1,5 +1,5 @@
 {
-  "name": "stream-vault",
+  "name": "streamlit",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -14,7 +14,7 @@
     "firebase": "^10.12.5",
     "framer-motion": "^12.40.0",
     "lucide-react": "^1.17.0",
-    "next": "^9.3.3",
+    "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hot-toast": "^2.4.1",

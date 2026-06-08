@@ -1,4 +1,4 @@
-# StreamVault
+# Streamlit
 
 A Netflix-style streaming platform built with Next.js. Browse movies and shows, manage profiles, watch content, and subscribe to plans — all in a cinematic dark UI.
 

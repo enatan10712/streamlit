@@ -10,7 +10,7 @@ import { createProfile, getProfiles } from "@/lib/firestore";
 import { useProfileStore } from "@/store/useProfileStore";
 import type { Profile } from "@/store/useAuthStore";
 
-const AVATARS = ["SV", "A1", "B2", "C3", "D4", "K1", "M2", "R3", "Z4", "N5", "Q6", "T7"];
+const AVATARS = ["SL", "A1", "B2", "C3", "D4", "K1", "M2", "R3", "Z4", "N5", "Q6", "T7"];
 
 export default function ProfilesPage() {
   const router = useRouter();
@@ -20,7 +20,7 @@ export default function ProfilesPage() {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [profileName, setProfileName] = useState("");
-  const [selectedAvatar, setSelectedAvatar] = useState("SV");
+  const [selectedAvatar, setSelectedAvatar] = useState("SL");
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
@@ -73,7 +73,7 @@ export default function ProfilesPage() {
       setProfiles(nextProfiles);
       setShowCreateModal(false);
       setProfileName("");
-      setSelectedAvatar("SV");
+      setSelectedAvatar("SL");
       toast.success("Profile created");
     } catch (error) {
       console.error("Failed to create profile:", error);

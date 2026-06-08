@@ -14,29 +14,29 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "StreamVault | Unlimited Movies & Shows",
-  description: "Experience the next generation of cinematic streaming with StreamVault. Unlimited movies, TV shows, and exclusive originals.",
-  keywords: ["streaming", "movies", "tv shows", "netflix clone", "vault", "cinema"],
-  authors: [{ name: "StreamVault Team" }],
+  title: "Streamlit | Unlimited Movies & Shows",
+  description: "Experience the next generation of cinematic streaming with Streamlit. Unlimited movies, TV shows, and exclusive originals.",
+  keywords: ["streaming", "movies", "tv shows", "netflix clone", "cinema", "streamlit"],
+  authors: [{ name: "Streamlit Team" }],
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "StreamVault",
+    title: "Streamlit",
   },
   formatDetection: {
     telephone: false,
   },
   openGraph: {
     type: "website",
-    siteName: "StreamVault",
-    title: "StreamVault | Unlimited Movies & Shows",
-    description: "Experience the next generation of cinematic streaming with StreamVault.",
+    siteName: "Streamlit",
+    title: "Streamlit | Unlimited Movies & Shows",
+    description: "Experience the next generation of cinematic streaming with Streamlit.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "StreamVault | Unlimited Movies & Shows",
-    description: "Experience the next generation of cinematic streaming with StreamVault.",
+    title: "Streamlit | Unlimited Movies & Shows",
+    description: "Experience the next generation of cinematic streaming with Streamlit.",
   },
 };
 

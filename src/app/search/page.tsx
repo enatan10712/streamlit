@@ -128,7 +128,7 @@ export default function SearchPage() {
         </div>
       ) : (
         <div className="py-24 text-center">
-          <h2 className="text-xl font-bold">{query ? "No results found" : "Search the vault"}</h2>
+          <h2 className="text-xl font-bold">{query ? "No results found" : "Search Streamlit"}</h2>
           <p className="mx-auto mt-2 max-w-sm text-zinc-400">
             {query ? "Try another title, person, or genre." : "Start typing to find movies and TV shows from TMDB."}
           </p>

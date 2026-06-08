@@ -1,4 +1,4 @@
-# StreamVault Implementation Guide
+# Streamlit Implementation Guide
 
 ## Quick Start
 

@@ -73,7 +73,7 @@ export default function Navbar() {
               <Play className="h-4 w-4 fill-white text-white" />
             </span>
             <span className="text-xl font-black uppercase italic tracking-normal text-white md:text-2xl">
-              Stream<span className="text-primary">Vault</span>
+              Stream<span className="text-primary">lit</span>
             </span>
           </Link>
 

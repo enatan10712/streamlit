@@ -35,7 +35,10 @@ export const useWatchListStore = create<WatchListState>()(
 
       addFavorite: (item) =>
         set((state) => ({
-          favorites: [item, ...state.favorites.filter((f) => f.id !== item.id)],
+          favorites: [
+            { ...item, addedAt: item.addedAt || Date.now() },
+            ...state.favorites.filter((f) => f.id !== item.id)
+          ],
         })),
 
       removeFavorite: (id) =>

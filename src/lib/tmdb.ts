@@ -102,11 +102,19 @@ export const tmdbAPI = {
   searchMovies: (query: string, page = 1) =>
     tmdbClient.get('/search/movie', { params: { query, page } }),
 
-  getGenres: () =>
+  getMovieGenres: () =>
     tmdbClient.get('/genre/movie/list'),
+
+  getTVGenres: () =>
+    tmdbClient.get('/genre/tv/list'),
 
   getMoviesByGenre: (genreId: number, page = 1) =>
     tmdbClient.get('/discover/movie', {
+      params: { with_genres: genreId, page, sort_by: 'popularity.desc' },
+    }),
+
+  getTVShowsByGenre: (genreId: number, page = 1) =>
+    tmdbClient.get('/discover/tv', {
       params: { with_genres: genreId, page, sort_by: 'popularity.desc' },
     }),
 };

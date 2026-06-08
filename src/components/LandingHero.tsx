@@ -56,7 +56,7 @@ export default function LandingHero() {
               <Play className="h-5 w-5 fill-white text-white" />
             </div>
             <span className="text-xl font-black tracking-tighter italic uppercase md:text-2xl">
-              Stream<span className="text-primary">Vault</span>
+              Stream<span className="text-primary">lit</span>
             </span>
           </Link>
           <Link
@@ -104,7 +104,7 @@ export default function LandingHero() {
             className="mx-auto mt-8 max-w-2xl text-lg font-medium text-zinc-400 md:text-2xl"
           >
             Stream the latest blockbusters and exclusive originals anywhere, anytime.
-            Your cinematic vault awaits.
+            Your cinematic experience awaits.
           </motion.p>
 
           <motion.div
@@ -179,7 +179,7 @@ export default function LandingHero() {
           className="mx-auto max-w-5xl overflow-hidden rounded-[2rem] border border-primary/20 bg-gradient-to-br from-primary/20 via-surface to-surface p-12 text-center md:p-20"
         >
           <h2 className="text-3xl font-black uppercase italic tracking-tighter md:text-5xl">
-            Ready to enter the vault?
+            Ready to start streaming?
           </h2>
           <p className="mx-auto mt-4 max-w-lg text-zinc-400">
             Join millions of viewers streaming the world&apos;s best entertainment.
@@ -200,14 +200,14 @@ export default function LandingHero() {
             <div className="rounded bg-white p-1">
               <Play className="h-3 w-3 fill-black text-black" />
             </div>
-            <span className="font-black uppercase italic tracking-tighter">StreamVault</span>
+            <span className="font-black uppercase italic tracking-tighter">Streamlit</span>
           </div>
           <div className="flex gap-8">
             <a href="#" className="transition-colors hover:text-white">Privacy</a>
             <a href="#" className="transition-colors hover:text-white">Terms</a>
             <a href="#" className="transition-colors hover:text-white">Help</a>
           </div>
-          <p>© 2026 StreamVault Inc.</p>
+          <p>© 2026 Streamlit Inc.</p>
         </div>
       </footer>
     </div>
