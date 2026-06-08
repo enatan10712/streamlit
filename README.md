@@ -1,17 +1,17 @@
 # Streamlit
 
-A Netflix-style streaming platform built with Next.js. Browse movies and shows, manage profiles, watch content, and subscribe to plans — all in a cinematic dark UI.
+A high-fidelity Netflix-style streaming platform built with Next.js 16. Browse cinematic content, manage up to 5 profiles, watch content with progress saving, and enjoy a premium dark UI — all powered by Firebase and TMDB.
 
 ## Features
 
-- **Landing page** — Marketing homepage with animated hero and plan overview
-- **Authentication** — Email/password sign-up and sign-in via NextAuth (Google OAuth optional)
-- **Profiles** — Up to 5 viewer profiles per account
-- **Browse** — Hero banner, horizontal content rows, hover previews, and detail modals
-- **Video player** — HLS streaming with Vidstack
-- **Search** — Full-text search across the content library
-- **Subscriptions** — Stripe-powered checkout (optional)
-- **Admin** — Content management dashboard
+- **Premium UI** — Cinematic dark theme with glassmorphism, Framer Motion animations, and responsive design.
+- **Authentication** — Firebase Authentication supporting Email/Password and Google Sign-In.
+- **Profiles** — Support for up to 5 profiles per account with custom avatars.
+- **Browse Experience** — Dynamic hero banner, horizontal scrolling rows, hover previews, and rich detail modals.
+- **Content filtering** — Category and genre-based filtering using the TMDB Discovery API.
+- **Video player** — Professional playback experience using Vidstack with fullscreen, volume, speed controls, and subtitles.
+- **Persistence** — "Continue Watching" and "My List" functionality synced to Firebase Firestore.
+- **Search** — Debounced multi-search across movies and TV shows.
 
 ## Tech Stack
 
@@ -20,17 +20,17 @@ A Netflix-style streaming platform built with Next.js. Browse movies and shows, 
 | Framework | Next.js 16 (App Router) |
 | Language | TypeScript |
 | Styling | Tailwind CSS 4 |
-| Database | PostgreSQL + Prisma 7 |
-| Auth | NextAuth.js |
-| Payments | Stripe |
+| Backend | Firebase (Auth & Firestore) |
+| Content API | TMDB (The Movie Database) |
+| Video Player | Vidstack |
 | State | Zustand |
 | Animations | Framer Motion |
 
 ## Prerequisites
 
-- **Node.js** 20 or later
-- **PostgreSQL** running locally (or a hosted database URL)
-- **npm** (comes with Node.js)
+- **Node.js** 22 or later
+- **Firebase Account** (for Auth and Firestore)
+- **TMDB API Key** (from [themoviedb.org](https://www.themoviedb.org/documentation/api))
 
 ## Getting Started
 
@@ -44,31 +44,23 @@ npm install
 
 ### 2. Set up environment variables
 
-Copy the example env file and fill in your values:
+Create a `.env.local` file in the root directory and add your credentials:
 
-```bash
-cp .env.example .env.local
+```env
+# Firebase Configuration
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+
+# TMDB Configuration
+NEXT_PUBLIC_TMDB_API_KEY=your_tmdb_api_key
+NEXT_PUBLIC_TMDB_API_URL=https://api.themoviedb.org/3
 ```
 
-Required variables:
-
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `NEXTAUTH_URL` | App URL (e.g. `http://localhost:3000`) |
-| `NEXTAUTH_SECRET` | Random secret for session encryption |
-
-Optional variables for Google sign-in and Stripe are listed in `.env.example`.
-
-### 3. Set up the database
-
-Make sure PostgreSQL is running, then apply the schema:
-
-```bash
-npx prisma migrate dev
-```
-
-### 4. Start the development server
+### 3. Start the development server
 
 ```bash
 npm run dev
@@ -91,19 +83,16 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 src/
 ├── app/              # Pages and API routes (App Router)
 │   ├── auth/         # Login & register
-│   ├── browse/       # Main catalog
-│   ├── profiles/     # Profile selection
-│   ├── watch/        # Video player
-│   ├── search/       # Search results
-│   ├── subscribe/    # Pricing plans
-│   └── admin/        # Admin dashboard
-├── components/       # Reusable UI components
-├── actions/          # Server actions
-├── lib/              # Auth, Prisma, Stripe helpers
-└── store/            # Client-side state (Zustand)
-
-prisma/
-└── schema.prisma     # Database schema
+│   ├── browse/       # Main catalog with genre filtering
+│   ├── profiles/     # Profile management
+│   ├── watch/        # Vidstack video player integration
+│   ├── search/       # Debounced search results
+│   ├── subscribe/    # UI-only subscription plans
+│   └── account/      # Account settings & logout
+├── components/       # Reusable UI components (Modals, Rows, Cards)
+├── lib/              # Firebase, TMDB, and Auth helpers
+├── store/            # Global state (Auth, Profiles, Watchlist)
+└── types/            # TypeScript definitions
 ```
 
 ## Routes
@@ -113,21 +102,21 @@ prisma/
 | `/` | Landing page |
 | `/auth/login` | Sign in |
 | `/auth/register` | Create account |
-| `/profiles` | Choose a profile |
-| `/browse` | Content catalog (requires auth) |
-| `/watch/[id]` | Video player |
-| `/search` | Search content |
-| `/subscribe` | Subscription plans |
-| `/admin` | Admin dashboard |
+| `/profiles` | Profile selection & creation |
+| `/browse` | Main content catalog |
+| `/watch/[id]` | Video player with progress saving |
+| `/search` | Search movies and shows |
+| `/subscribe` | Subscription tiers (UI) |
+| `/account` | User settings |
 
-## Production
+## Deployment
 
-```bash
-npm run build
-npm run start
-```
+The project is optimized for deployment on Vercel.
 
-Set all environment variables on your hosting platform (e.g. Vercel). The app is configured for Vercel deployment via `vercel.json`.
+1. Push your code to a GitHub repository.
+2. Connect your repository to Vercel.
+3. Add all environment variables listed in `.env.local` to the Vercel project settings.
+4. The build command is `next build`.
 
 ## License
 
