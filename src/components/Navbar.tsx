@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -168,7 +168,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden absolute top-full left-0 w-full bg-[#1a192f] border-t border-white/5 py-4 animate-in slide-in-from-top duration-300">
           <div className="flex flex-col gap-4 px-6">

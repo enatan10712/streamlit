@@ -191,7 +191,6 @@ export default function VideoPlayer({ src, poster, title, subtitles, onProgress,
         ))}
       </video>
 
-      {/* Back Button */}
       <div className={cn(
         "absolute top-0 left-0 w-full p-8 bg-gradient-to-b from-black/70 to-transparent transition-opacity duration-300 z-50",
         showControls ? "opacity-100" : "opacity-0"
@@ -205,7 +204,6 @@ export default function VideoPlayer({ src, poster, title, subtitles, onProgress,
         </button>
       </div>
 
-      {/* Center Play/Pause Overlay (on click) */}
       <div
         className={cn(
           "absolute inset-0 flex items-center justify-center transition-opacity duration-300",
@@ -220,12 +218,10 @@ export default function VideoPlayer({ src, poster, title, subtitles, onProgress,
         )}
       </div>
 
-      {/* Controls Overlay */}
       <div className={cn(
         "absolute bottom-0 left-0 w-full p-4 md:p-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent transition-opacity duration-300 flex flex-col gap-4 z-50",
         showControls ? "opacity-100" : "opacity-0"
       )}>
-        {/* Progress Bar */}
         <div className="relative w-full group/progress">
           <input
             type="range"
@@ -242,7 +238,6 @@ export default function VideoPlayer({ src, poster, title, subtitles, onProgress,
             <button onClick={togglePlay} className="text-white hover:scale-110 transition-transform">
               {isPlaying ? <Pause className="h-8 w-8 fill-current" /> : <Play className="h-8 w-8 fill-current" />}
             </button>
-
             <div className="flex items-center gap-4">
               <button onClick={() => skip(-10)} className="text-white hover:text-gray-300">
                 <SkipBack className="h-6 w-6" />
@@ -251,7 +246,6 @@ export default function VideoPlayer({ src, poster, title, subtitles, onProgress,
                 <SkipForward className="h-6 w-6" />
               </button>
             </div>
-
             <div className="flex items-center gap-2 group/volume">
               <button onClick={toggleMute} className="text-white">
                 {isMuted || volume === 0 ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}
@@ -266,12 +260,10 @@ export default function VideoPlayer({ src, poster, title, subtitles, onProgress,
                 className="w-0 group-hover/volume:w-24 transition-all overflow-hidden appearance-none h-1 bg-white/20 accent-white rounded-full"
               />
             </div>
-
             <div className="text-white text-sm font-medium">
               {formatTime(currentTime)} / {formatTime(duration)}
             </div>
           </div>
-
           <div className="flex items-center gap-6">
             <button className="text-white hover:text-gray-300">
               <Subtitles className="h-6 w-6" />

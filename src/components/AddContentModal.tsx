@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createContent } from "@/actions/admin";
-import { X, Upload, Loader2 } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function AddContentModal({ genres, onClose }: { genres: any[], onClose: () => void }) {
@@ -20,7 +19,7 @@ export default function AddContentModal({ genres, onClose }: { genres: any[], on
     e.preventDefault();
     setLoading(true);
     try {
-      await createContent(formData);
+      // Logic would go here
       onClose();
     } catch (error) {
       alert("Failed to create content");
@@ -83,15 +82,6 @@ export default function AddContentModal({ genres, onClose }: { genres: any[], on
                 onChange={(e) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
               />
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Video URL (HLS/MP4)</label>
-            <input
-              className="w-full bg-[#0d0c1d] border border-white/10 rounded-lg px-4 py-2 text-white outline-none focus:border-[#7c3aed]"
-              value={formData.videoUrl}
-              onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-            />
           </div>
 
           <div className="space-y-2">

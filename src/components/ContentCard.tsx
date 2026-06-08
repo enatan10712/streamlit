@@ -1,10 +1,9 @@
 "use client";
 
 import { Play, Plus, ChevronDown, ThumbsUp, Volume2, VolumeX } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import ContentModal from "./ContentModal";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
 
 interface ContentCardProps {
   content: any;
@@ -14,7 +13,6 @@ export default function ContentCard({ content }: ContentCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleMouseEnter = () => {
@@ -54,7 +52,6 @@ export default function ContentCard({ content }: ContentCardProps) {
               <div className="relative aspect-video w-full">
                 {content.videoUrl ? (
                   <video
-                    ref={videoRef}
                     src={content.videoUrl}
                     autoPlay
                     loop

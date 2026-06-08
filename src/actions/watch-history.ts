@@ -1,91 +1,38 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
 
-export async function updateWatchHistory(profileId: string, contentId: string, episodeId: string | null, watchedSeconds: number, isCompleted: boolean) {
-  const session = await getServerSession(authOptions);
-  if (!session) throw new Error("Unauthorized");
-
-  // Verify profile belongs to user
-  const profile = await prisma.profile.findUnique({
-    where: { id: profileId },
-    select: { userId: true }
-  });
-
-  if (!profile || profile.userId !== session.user.id) {
-    throw new Error("Invalid profile");
+export async function updateWatchHistory(profileId: string, contentId: string, watchedSeconds: number) {
+  try {
+    await prisma.watchHistory.upsert({
+      where: {
+        profileId_contentId_episodeId: {
+          profileId,
+          contentId,
+          episodeId: "none",
+        },
+      },
+      update: { watchedSeconds, lastWatchedAt: new Date() },
+      create: { profileId, contentId, episodeId: "none", watchedSeconds },
+    });
+    revalidatePath("/browse");
+  } catch (error) {
+    console.error("UPDATE_WATCH_HISTORY_ERROR", error);
   }
-
-  // Use undefined for null fields in Prisma where unique constraints are involved
-  // or handle the types explicitly
-  const history = await prisma.watchHistory.upsert({
-    where: {
-      profileId_contentId_episodeId: {
-        profileId,
-        contentId: (episodeId ? undefined : contentId) as any,
-        episodeId: (episodeId || undefined) as any
-      }
-    },
-    update: {
-      watchedSeconds,
-      isCompleted,
-      lastWatchedAt: new Date()
-    },
-    create: {
-      profileId,
-      contentId: episodeId ? null : contentId,
-      episodeId: episodeId || null,
-      watchedSeconds,
-      isCompleted
-    }
-  });
-
-  return history;
 }
 
 export async function getContinueWatching(profileId: string) {
-  const session = await getServerSession(authOptions);
-  if (!session) throw new Error("Unauthorized");
-
-  const history = await prisma.watchHistory.findMany({
-    where: {
-      profileId,
-      isCompleted: false
-    },
-    include: {
-      content: true,
-      episode: {
-        include: {
-          season: {
-            include: {
-              content: true
-            }
-          }
-        }
-      }
-    },
-    orderBy: {
-      lastWatchedAt: 'desc'
-    },
-    take: 12
-  });
-
-  return history.map(h => {
-    if (h.episode) {
-      return {
-        ...h.episode.season.content,
-        episodeTitle: h.episode.title,
-        watchedSeconds: h.watchedSeconds,
-        duration: h.episode.duration,
-        type: 'EPISODE'
-      };
-    }
-    return {
-      ...h.content,
-      watchedSeconds: h.watchedSeconds,
-      type: 'MOVIE'
-    };
-  });
+  try {
+    const history = await prisma.watchHistory.findMany({
+      where: { profileId, isCompleted: false },
+      include: { content: true },
+      orderBy: { lastWatchedAt: "desc" },
+      take: 6,
+    });
+    return history.map((h) => h.content);
+  } catch (error) {
+    console.error("GET_CONTINUE_WATCHING_ERROR", error);
+    return [];
+  }
 }

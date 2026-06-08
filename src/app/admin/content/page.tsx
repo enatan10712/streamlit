@@ -5,17 +5,12 @@ import prisma from "@/lib/prisma";
 import Navbar from "@/components/Navbar";
 import { Plus, Edit, Trash2 } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function ContentManagement() {
   const session = await getServerSession(authOptions);
-
-  if (session?.user?.role !== "ADMIN") {
-    redirect("/browse");
-  }
-
-  const contentList = await prisma.content.findMany({
-    orderBy: { createdAt: 'desc' }
-  });
-
+  if (session?.user?.role !== "ADMIN") redirect("/browse");
+  const contentList = await prisma.content.findMany({ orderBy: { createdAt: 'desc' } });
   return (
     <div className="min-h-screen bg-[#0d0c1d]">
       <Navbar />
@@ -23,44 +18,22 @@ export default async function ContentManagement() {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-white">Content Management</h1>
           <button className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary/90 transition-all">
-            <Plus className="h-5 w-5" />
-            Add Content
+            <Plus className="h-5 w-5" /> Add Content
           </button>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {contentList.map((content) => (
             <div key={content.id} className="bg-white/5 border border-white/10 rounded-xl overflow-hidden flex flex-col">
               <div className="aspect-video relative">
                 <img src={content.thumbnailUrl} alt={content.title} className="w-full h-full object-cover" />
-                <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded">
-                  {content.type}
-                </div>
+                <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded">{content.type}</div>
               </div>
               <div className="p-4 flex-1 flex flex-col">
                 <h3 className="text-white font-bold mb-2">{content.title}</h3>
                 <p className="text-gray-400 text-sm line-clamp-2 mb-4">{content.description}</p>
-                <div className="mt-auto flex items-center justify-between pt-4 border-t border-white/5">
-                  <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
-                    {content.rating} • {content.duration}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button className="p-2 text-gray-400 hover:text-white transition-colors">
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    <button className="p-2 text-gray-400 hover:text-red-500 transition-colors">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
               </div>
             </div>
           ))}
-          {contentList.length === 0 && (
-            <div className="col-span-full py-20 text-center bg-white/5 border border-dashed border-white/20 rounded-2xl">
-              <p className="text-gray-500 italic">No content available. Click &quot;Add Content&quot; to begin.</p>
-            </div>
-          )}
         </div>
       </div>
     </div>

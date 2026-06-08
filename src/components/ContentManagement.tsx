@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import AddContentModal from "@/components/AddContentModal";
-import { Plus, Film, Trash2, Edit } from "lucide-react";
+import { Plus, Trash2, Edit } from "lucide-react";
 
 export default function ContentManagement({ initialContent, genres }: { initialContent: any[], genres: any[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [content, setContent] = useState(initialContent);
+  const content = initialContent;
 
   return (
     <div className="space-y-8">
@@ -37,7 +37,7 @@ export default function ContentManagement({ initialContent, genres }: { initialC
             </div>
             <div className="p-4">
               <h3 className="text-white font-bold truncate">{item.title}</h3>
-              <p className="text-gray-400 text-xs mt-1">{item.type} • {item.genres.map((g: any) => g.name).join(", ")}</p>
+              <p className="text-gray-400 text-xs mt-1">{item.type} • {item.genres?.map((g: any) => g.name).join(", ")}</p>
             </div>
           </div>
         ))}
@@ -46,10 +46,7 @@ export default function ContentManagement({ initialContent, genres }: { initialC
       {isModalOpen && (
         <AddContentModal
           genres={genres}
-          onClose={() => {
-            setIsModalOpen(false);
-            // In a real app we'd refresh the list
-          }}
+          onClose={() => setIsModalOpen(false)}
         />
       )}
     </div>
