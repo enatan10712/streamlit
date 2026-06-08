@@ -1,9 +1,10 @@
 "use client";
 
-import { X, Play, Plus, ThumbsUp, Volume2 } from "lucide-react";
+import { X, Play, Plus, ThumbsUp, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
+import { useProfileStore } from "@/store/useProfileStore";
+import { toggleWatchlist, toggleLike } from "@/actions/content";
 
 interface ContentModalProps {
   content: any;
@@ -13,7 +14,9 @@ interface ContentModalProps {
 
 export default function ContentModal({ content, isOpen, onClose }: ContentModalProps) {
   const router = useRouter();
+  const { activeProfileId } = useProfileStore();
   const [isMounted, setIsMounted] = useState(false);
+  const [inWatchlist, setInWatchlist] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -25,6 +28,17 @@ export default function ContentModal({ content, isOpen, onClose }: ContentModalP
   }, [isOpen]);
 
   if (!isMounted || !isOpen) return null;
+
+  const onToggleWatchlist = async () => {
+    if (!activeProfileId) return;
+    setInWatchlist(!inWatchlist);
+    await toggleWatchlist(activeProfileId, content.id);
+  };
+
+  const onToggleLike = async () => {
+    if (!activeProfileId) return;
+    await toggleLike(activeProfileId, content.id, 1);
+  };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
@@ -65,10 +79,16 @@ export default function ContentModal({ content, isOpen, onClose }: ContentModalP
                 <Play className="h-6 w-6 fill-current" />
                 Play
               </button>
-              <button className="h-12 w-12 rounded-full border-2 border-white/50 flex items-center justify-center text-white hover:border-white transition-all">
-                <Plus className="h-6 w-6" />
+              <button
+                onClick={onToggleWatchlist}
+                className="h-12 w-12 rounded-full border-2 border-white/50 flex items-center justify-center text-white hover:border-white transition-all"
+              >
+                {inWatchlist ? <Check className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
               </button>
-              <button className="h-12 w-12 rounded-full border-2 border-white/50 flex items-center justify-center text-white hover:border-white transition-all">
+              <button
+                onClick={onToggleLike}
+                className="h-12 w-12 rounded-full border-2 border-white/50 flex items-center justify-center text-white hover:border-white transition-all"
+              >
                 <ThumbsUp className="h-6 w-6" />
               </button>
             </div>

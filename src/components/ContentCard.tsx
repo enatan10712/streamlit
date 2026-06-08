@@ -1,18 +1,22 @@
 "use client";
 
-import { Play, Plus, ChevronDown, ThumbsUp, Volume2, VolumeX } from "lucide-react";
+import { Play, Plus, ChevronDown, ThumbsUp, Volume2, VolumeX, Check } from "lucide-react";
 import { useState, useRef } from "react";
 import ContentModal from "./ContentModal";
 import { motion, AnimatePresence } from "framer-motion";
+import { useProfileStore } from "@/store/useProfileStore";
+import { toggleWatchlist, toggleLike } from "@/actions/content";
 
 interface ContentCardProps {
   content: any;
 }
 
 export default function ContentCard({ content }: ContentCardProps) {
+  const { activeProfileId } = useProfileStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [inWatchlist, setInWatchlist] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleMouseEnter = () => {
@@ -24,6 +28,19 @@ export default function ContentCard({ content }: ContentCardProps) {
   const handleMouseLeave = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setIsHovered(false);
+  };
+
+  const onToggleWatchlist = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!activeProfileId) return;
+    setInWatchlist(!inWatchlist);
+    await toggleWatchlist(activeProfileId, content.id);
+  };
+
+  const onToggleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!activeProfileId) return;
+    await toggleLike(activeProfileId, content.id, 1);
   };
 
   return (
@@ -84,12 +101,18 @@ export default function ContentCard({ content }: ContentCardProps) {
                   <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center text-black hover:bg-white/80 transition-colors">
                     <Play className="h-4 w-4 fill-current ml-0.5" />
                   </div>
-                  <div className="h-8 w-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-white transition-colors">
-                    <Plus className="h-4 w-4" />
-                  </div>
-                  <div className="h-8 w-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-white transition-colors">
+                  <button
+                    onClick={onToggleWatchlist}
+                    className="h-8 w-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-white transition-colors"
+                  >
+                    {inWatchlist ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                  </button>
+                  <button
+                    onClick={onToggleLike}
+                    className="h-8 w-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-white transition-colors"
+                  >
                     <ThumbsUp className="h-4 w-4" />
-                  </div>
+                  </button>
                   <div className="flex-1" />
                   <div className="h-8 w-8 rounded-full border border-white/30 flex items-center justify-center text-white hover:border-white transition-colors">
                     <ChevronDown className="h-4 w-4" />

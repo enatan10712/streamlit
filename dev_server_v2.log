@@ -1,0 +1,74 @@
+
+> stream-vault@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+✓ Ready in 613ms
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+
+ GET /subscribe 200 in 2.6s (next.js: 1611ms, application-code: 1015ms)
+⨯ Error: DATABASE_URL environment variable is not set. Please add it to your .env file or Vercel environment variables.
+    at prismaClientSingleton (src/lib/prisma.ts:17:11)
+    at <unknown> (src/lib/prisma.ts:32:37)
+  15 |     }
+  16 |
+> 17 |     throw new Error(
+     |           ^
+  18 |       "DATABASE_URL environment variable is not set. " +
+  19 |       "Please add it to your .env file or Vercel environment variables."
+  20 |     ); {
+  page: '/api/auth/session'
+}
+ GET /subscribe 200 in 533ms (next.js: 155ms, application-code: 378ms)
+ GET /subscribe 200 in 309ms (next.js: 6ms, application-code: 303ms)
+ GET /subscribe 200 in 284ms (next.js: 9ms, application-code: 275ms)
+ GET /subscribe 200 in 295ms (next.js: 8ms, application-code: 287ms)
+ GET /subscribe 200 in 226ms (next.js: 9ms, application-code: 217ms)
+ GET /subscribe 200 in 94ms (next.js: 7ms, application-code: 86ms)
+ GET /api/auth/session 500 in 3.6s (next.js: 3.1s, application-code: 519ms)
+⨯ Error: DATABASE_URL environment variable is not set. Please add it to your .env file or Vercel environment variables.
+    at prismaClientSingleton (src/lib/prisma.ts:17:11)
+    at <unknown> (src/lib/prisma.ts:32:37)
+  15 |     }
+  16 |
+> 17 |     throw new Error(
+     |           ^
+  18 |       "DATABASE_URL environment variable is not set. " +
+  19 |       "Please add it to your .env file or Vercel environment variables."
+  20 |     ); {
+  page: '/api/auth/_log'
+}
+ POST /api/auth/_log 500 in 243ms (next.js: 202ms, application-code: 41ms)
+[browser] [next-auth][error][CLIENT_FETCH_ERROR]
+https://next-auth.js.org/errors#client_fetch_error Unexpected token '<', "<!DOCTYPE "... is not valid JSON {
+  error: {
+    message: [32m`Unexpected token '<', "<!DOCTYPE "... is not valid JSON`[39m,
+    name: [32m'SyntaxError'[39m,
+    stack: [32m`SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON`[39m
+  },
+  message: [32m`Unexpected token '<', "<!DOCTYPE "... is not valid JSON`[39m,
+  url: [32m'/api/auth/session'[39m
+}
+    at new Promise (<anonymous>) (<anonymous>)
+
+<--- Last few GCs --->
+
+[874089:0x8280000]   835232 ms: Scavenge (interleaved) 3683.2 (4010.6) -> 3675.9 (4010.6) MB, pooled: 0 MB, 256.49 / 0.00 ms  (average mu = 0.195, current mu = 0.139) allocation failure;
+[874089:0x8280000]   841722 ms: Mark-Compact 3691.8 (4014.4) -> 3663.7 (4006.5) MB, pooled: 0 MB, 6361.17 / 23.53 ms  (average mu = 0.160, current mu = 0.119) allocation failure; scavenge might not succeed
+
+
+<--- JS stacktrace --->
+
+FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 0xe42d60 node::OOMErrorHandler(char const*, v8::OOMDetails const&) [next-server (v16.2.6)]
+ 2: 0x121ddd0 v8::Utils::ReportOOMFailure(v8::internal::Isolate*, char const*, v8::OOMDetails const&) [next-server (v16.2.6)]
+ 3: 0x121e0a7 v8::internal::V8::FatalProcessOutOfMemory(v8::internal::Isolate*, char const*, v8::OOMDetails const&) [next-server (v16.2.6)]
+ 4: 0x144ba05  [next-server (v16.2.6)]
+ 5: 0x144ba33  [next-server (v16.2.6)]
+ 6: 0x1464b0a  [next-server (v16.2.6)]
+ 7: 0x1467cd8  [next-server (v16.2.6)]
+ 8: 0x1ccd051  [next-server (v16.2.6)]
