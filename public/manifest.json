@@ -1,6 +1,6 @@
 {
-  "name": "StreamVault",
-  "short_name": "StreamVault",
+  "name": "Streamlit",
+  "short_name": "Streamlit",
   "description": "Premium Video Streaming Platform",
   "start_url": "/",
   "display": "standalone",

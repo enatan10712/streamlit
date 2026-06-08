@@ -6,7 +6,7 @@ export default function Loading() {
         <div className="absolute inset-0 h-16 w-16 animate-pulse-glow rounded-full bg-primary/20 blur-xl" />
       </div>
       <p className="text-sm font-bold uppercase tracking-[0.3em] text-zinc-500">
-        Loading vault
+        Loading Streamlit
       </p>
     </div>
   );

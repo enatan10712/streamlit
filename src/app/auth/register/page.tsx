@@ -88,7 +88,7 @@ export default function RegisterPage() {
           {/* Logo */}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-2">
-              StreamVault
+              Streamlit
             </h1>
             <p className="text-slate-300 text-sm">Create your account</p>
           </div>
