@@ -1,17 +1,16 @@
-"use client";
+'use client';
 
-import { SessionProvider } from "next-auth/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
+import { AuthProvider } from '@/lib/auth-context';
+import ThemeProvider from '@/components/ThemeProvider';
+import { Toaster } from 'sonner';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient());
-
   return (
-    <SessionProvider>
-      <QueryClientProvider client={queryClient}>
+    <AuthProvider>
+      <ThemeProvider>
         {children}
-      </QueryClientProvider>
-    </SessionProvider>
+        <Toaster position="top-center" theme="dark" />
+      </ThemeProvider>
+    </AuthProvider>
   );
 }

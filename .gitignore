@@ -20,6 +20,9 @@
 # production
 /build
 
+# local dev auth fallback
+.data/
+
 # misc
 .DS_Store
 *.pem

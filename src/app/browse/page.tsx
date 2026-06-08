@@ -1,101 +1,163 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { Info, Play } from "lucide-react";
+import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
-import { Play, Info } from "lucide-react";
-import prisma from "@/lib/prisma";
-import ContentCard from "@/components/ContentCard";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { getContinueWatching } from "@/actions/watch-history";
+import ContentRow from "@/components/ContentRow";
+import BrowseSkeleton from "@/components/skeletons/BrowseSkeleton";
+import { getImageUrl, Movie, TVShow, tmdbAPI } from "@/lib/tmdb";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useProfileStore } from "@/store/useProfileStore";
+import { useWatchListStore } from "@/store/useWatchListStore";
 
-export const dynamic = "force-dynamic";
+type RowItem = Movie | TVShow;
 
-export default async function BrowsePage() {
-  const session = await getServerSession(authOptions);
+const titleFor = (item: RowItem) => "title" in item ? item.title : item.name;
 
-  let trendingContent: any[] = [];
-  let actionMovies: any[] = [];
-  let profiles: any[] = [];
-  let continueWatching: any[] = [];
+export default function BrowsePage() {
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuthStore();
+  const { currentProfile } = useProfileStore();
+  const { addFavorite, removeFavorite, isFavorite } = useWatchListStore();
+  const [trendingMovies, setTrendingMovies] = useState<Movie[]>([]);
+  const [trendingShows, setTrendingShows] = useState<TVShow[]>([]);
+  const [popularMovies, setPopularMovies] = useState<Movie[]>([]);
+  const [topRatedMovies, setTopRatedMovies] = useState<Movie[]>([]);
+  const [upcomingMovies, setUpcomingMovies] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  try {
-    profiles = await prisma.profile.findMany({
-      where: { userId: session?.user?.id },
-    });
+  const featured = useMemo(() => trendingMovies[0] || popularMovies[0], [trendingMovies, popularMovies]);
 
-    const activeProfile = profiles[0];
-    continueWatching = activeProfile
-      ? await getContinueWatching(activeProfile.id)
-      : [];
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      router.replace("/auth/login");
+      return;
+    }
+    if (!currentProfile) {
+      router.replace("/profiles");
+    }
+  }, [authLoading, user, currentProfile, router]);
 
-    trendingContent = await prisma.content.findMany({
-      take: 6,
-      orderBy: { createdAt: "desc" },
-    });
+  useEffect(() => {
+    if (!user || !currentProfile) return;
 
-    actionMovies = await prisma.content.findMany({
-      where: { type: "MOVIE" },
-      take: 6,
-    });
-  } catch (e) {
-    console.error("Database unavailable, falling back to mock data:", e);
+    const loadContent = async () => {
+      try {
+        setLoading(true);
+        const [movies, shows, popular, topRated, upcoming] = await Promise.all([
+          tmdbAPI.getTrendingMovies(),
+          tmdbAPI.getTrendingShows(),
+          tmdbAPI.getPopularMovies(),
+          tmdbAPI.getTopRatedMovies(),
+          tmdbAPI.getUpcomingMovies(),
+        ]);
+        setTrendingMovies(movies.data.results || []);
+        setTrendingShows(shows.data.results || []);
+        setPopularMovies(popular.data.results || []);
+        setTopRatedMovies(topRated.data.results || []);
+        setUpcomingMovies(upcoming.data.results || []);
+      } catch (error) {
+        console.error(error);
+        toast.error("Could not load TMDB content. Check your API key.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadContent();
+  }, [user, currentProfile]);
+
+  const handlePlay = (id: string | number) => router.push(`/watch/${id}`);
+
+  const handleFavoriteToggle = (id: string | number) => {
+    const allItems: RowItem[] = [
+      ...trendingMovies,
+      ...trendingShows,
+      ...popularMovies,
+      ...topRatedMovies,
+      ...upcomingMovies,
+    ];
+    const item = allItems.find((entry) => entry.id.toString() === id.toString());
+    if (!item) return;
+
+    if (isFavorite(id.toString())) {
+      removeFavorite(id.toString());
+      toast.success("Removed from My List");
+    } else {
+      addFavorite({
+        id: id.toString(),
+        type: "title" in item ? "movie" : "tv",
+        title: titleFor(item),
+        posterPath: item.poster_path || "",
+        rating: item.vote_average || 0,
+        addedAt: Date.now(),
+      });
+      toast.success("Added to My List");
+    }
+  };
+
+  const checkFavorite = (id: string | number) => isFavorite(id.toString());
+
+  if (authLoading || loading || !user || !currentProfile) {
+    return <BrowseSkeleton />;
   }
 
-  const mockContent = Array.from({ length: 6 }).map((_, i) => ({
-    id: `mock-${i}`,
-    title: `Vault Original #${i + 1}`,
-    description: "When a mysterious signal from the edge of the galaxy reaches Earth, a team of elite explorers must embark on a journey that will redefine humanity's place in the universe.",
-    thumbnailUrl: `https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=2070&auto=format&fit=crop&sig=${i}`,
-    duration: "2h 15m",
-    rating: "PG-13",
-    type: "MOVIE"
-  }));
-
-  const displayTrending = trendingContent.length > 0 ? trendingContent : mockContent;
-  const displayAction = actionMovies.length > 0 ? actionMovies : mockContent;
-
   return (
-    <div className="relative min-h-screen bg-[#0d0c1d]">
+    <main className="min-h-screen bg-background text-white">
       <Navbar />
-      <div className="relative h-[85vh] w-full">
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0d0c1d] via-transparent to-transparent z-10" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0d0c1d]/60 via-transparent to-transparent z-10" />
-        <div className="absolute inset-0 overflow-hidden">
-          <img
-            src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2025&auto=format&fit=crop"
-            className="w-full h-full object-cover"
-            alt="Hero"
-          />
-        </div>
-        <div className="relative z-20 h-full flex flex-col justify-end pb-24 px-4 md:px-12 max-w-3xl space-y-6">
-          <div className="flex items-center gap-2">
-            <span className="bg-[#7c3aed] text-white text-[10px] font-black px-2 py-0.5 rounded italic">VAULT</span>
-            <span className="text-white text-xs font-bold tracking-[0.3em] uppercase">Original</span>
-          </div>
-          <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase italic drop-shadow-2xl">COSMIC SIGNAL</h1>
-          <p className="text-lg text-gray-200 leading-relaxed drop-shadow-lg max-w-xl">
-            When a mysterious signal from the edge of the galaxy reaches Earth, a team of elite explorers must embark on a journey that will redefine humanity&apos;s place in the universe.
-          </p>
-        </div>
-      </div>
-      <div className="relative z-30 -mt-32 pb-20 space-y-12 px-4 md:px-12">
-        {continueWatching.length > 0 && <ContentRow title="Continue Watching" items={continueWatching} />}
-        <ContentRow title="Trending Now" items={displayTrending} />
-        <ContentRow title="Action Blockbusters" items={displayAction} />
-        <ContentRow title="New Releases" items={displayTrending.slice().reverse()} />
-      </div>
-    </div>
-  );
-}
 
-function ContentRow({ title, items }: { title: string; items: any[] }) {
-  return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-white flex items-center gap-2 group cursor-pointer">
-        {title}
-        <span className="text-xs text-primary font-medium tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity ml-2">Explore All</span>
-      </h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {items.map((item) => <ContentCard key={item.id} content={item} />)}
+      {featured && (
+        <section className="relative flex min-h-[82vh] items-end overflow-hidden">
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${getImageUrl(featured.backdrop_path, "original")})` }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/35 to-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/55 to-transparent" />
+
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative z-10 max-w-3xl px-5 pb-28 pt-32 md:px-12"
+          >
+            <p className="mb-3 text-sm font-bold uppercase tracking-[0.35em] text-primary">Featured today</p>
+            <h1 className="text-4xl font-black leading-tight text-white md:text-7xl">{featured.title}</h1>
+            <p className="mt-5 line-clamp-3 max-w-2xl text-base leading-7 text-zinc-200 md:text-lg">
+              {featured.overview}
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => handlePlay(featured.id)}
+                className="flex items-center gap-2 rounded-md bg-white px-6 py-3 font-bold text-black transition hover:bg-zinc-200"
+              >
+                <Play className="h-5 w-5 fill-current" />
+                Play
+              </button>
+              <Link
+                href={`/watch/${featured.id}`}
+                className="flex items-center gap-2 rounded-md bg-white/15 px-6 py-3 font-bold text-white backdrop-blur transition hover:bg-white/25"
+              >
+                <Info className="h-5 w-5" />
+                Details
+              </Link>
+            </div>
+          </motion.div>
+        </section>
+      )}
+
+      <div className="relative z-10 -mt-20 space-y-10 px-5 pb-20 md:px-12">
+        <ContentRow title="Trending Movies" items={trendingMovies} onMovieClick={handlePlay} onFavoriteToggle={handleFavoriteToggle} isFavorite={checkFavorite} />
+        <ContentRow title="Trending TV Shows" items={trendingShows} onMovieClick={handlePlay} onFavoriteToggle={handleFavoriteToggle} isFavorite={checkFavorite} />
+        <ContentRow title="Popular on StreamVault" items={popularMovies} onMovieClick={handlePlay} onFavoriteToggle={handleFavoriteToggle} isFavorite={checkFavorite} />
+        <ContentRow title="Top Rated" items={topRatedMovies} onMovieClick={handlePlay} onFavoriteToggle={handleFavoriteToggle} isFavorite={checkFavorite} />
+        <ContentRow title="Upcoming Movies" items={upcomingMovies} onMovieClick={handlePlay} onFavoriteToggle={handleFavoriteToggle} isFavorite={checkFavorite} />
       </div>
-    </div>
+    </main>
   );
 }

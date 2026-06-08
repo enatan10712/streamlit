@@ -1,44 +1,108 @@
-import prisma from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect, notFound } from "next/navigation";
-import WatchClient from "@/components/WatchClient";
+'use client';
 
-export const dynamic = "force-dynamic";
+import { useEffect, useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
+import { Loader } from 'lucide-react';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useProfileStore } from '@/store/useProfileStore';
+import WatchClient from '@/components/WatchClient';
+import { tmdbAPI, Movie } from '@/lib/tmdb';
 
-interface WatchPageProps {
-  params: Promise<{ contentId: string }>;
-}
+// Demo video sources
+const DEMO_VIDEOS: Record<string, string> = {
+  'demo-1': 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
+  'demo-2': 'https://test-streams.mux.dev/VZtzUGoiVv45OYxKzwjuJ6OilMY/VZtzUGoiVv45OYxKzwjuJ6OilMY.m3u8',
+  'demo-3': 'https://test-streams.mux.dev/RCJLOl2Y1SjFDgvj5eIqVU1XE6FhIXcVKY/RCJLOl2Y1SjFDgvj5eIqVU1XE6FhIXcVKY.m3u8',
+};
 
-export default async function WatchPage({ params }: WatchPageProps) {
-  const session = await getServerSession(authOptions);
-  if (!session) redirect("/auth/login");
+export default function WatchPage() {
+  const router = useRouter();
+  const params = useParams();
+  const contentId = params.contentId as string;
+  const { user } = useAuthStore();
+  const { currentProfile } = useProfileStore();
 
-  const { contentId } = await params;
+  const [movieData, setMovieData] = useState<Movie | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    include: { subscription: true }
-  });
+  useEffect(() => {
+    if (!user || !currentProfile) {
+      router.push('/auth/login');
+      return;
+    }
 
-  const isActive = user?.subscription?.status === "active";
+    const loadMovieData = async () => {
+      try {
+        setLoading(true);
+        // If it's a demo content ID, use demo data
+        if (contentId.startsWith('demo-')) {
+          setMovieData({
+            id: parseInt(contentId.split('-')[1]) || 1,
+            title: 'Demo Content',
+            overview: 'This is demo content for testing the video player.',
+            poster_path: null,
+            backdrop_path: null,
+            release_date: new Date().toISOString().split('T')[0],
+            vote_average: 8.5,
+            genre_ids: [],
+            popularity: 100,
+          });
+        } else {
+          // Otherwise, fetch from TMDB
+          const { data } = await tmdbAPI.getMovieDetail(parseInt(contentId));
+          setMovieData(data);
+        }
+      } catch {
+        setError('Failed to load movie data');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (!isActive && !contentId.startsWith("mock-")) {
-     // For demo purposes, we allow viewing mock content even without sub
-     // but in a real app, you'd redirect
-     // redirect("/subscribe");
+    loadMovieData();
+  }, [contentId, user, currentProfile, router]);
+
+  if (!user || !currentProfile) {
+    return null;
   }
 
-  const content = await prisma.content.findUnique({ where: { id: contentId } });
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <Loader className="w-8 h-8 animate-spin text-purple-500" />
+      </div>
+    );
+  }
 
-  if (!content && !contentId.startsWith("mock-")) notFound();
+  if (error || !movieData) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-white mb-4">Failed to load content</h1>
+          <Link
+            href="/browse"
+            className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold transition-colors"
+          >
+            Back to Browse
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
-  const videoData = content || {
-    id: contentId,
-    title: "Cosmic Signal",
-    videoUrl: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-    thumbnailUrl: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2025&auto=format&fit=crop",
-  };
+  // Get video URL - use demo video or construct from ID
+  const videoUrl =
+    DEMO_VIDEOS[`demo-${movieData.id % 3 + 1}`] ||
+    DEMO_VIDEOS['demo-1'];
 
-  return <WatchClient videoUrl={videoData.videoUrl || "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"} title={videoData.title} poster={videoData.thumbnailUrl} />;
+  return (
+    <WatchClient
+      videoUrl={videoUrl}
+      title={movieData.title}
+      poster={movieData.poster_path}
+      movieId={movieData.id}
+    />
+  );
 }

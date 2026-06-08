@@ -54,8 +54,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark h-full antialiased">
-      <body className={`${geistSans.variable} ${geistMono.variable} min-h-full bg-black text-white selection:bg-primary selection:text-white`}>
+    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=JSON.parse(localStorage.getItem('theme-storage')||'{}');var t=(s.state&&s.state.theme)||'dark';var r=t==='system'?(matchMedia('(prefers-color-scheme:light)').matches?'light':'dark'):t;document.documentElement.classList.add(r);document.documentElement.style.colorScheme=r;}catch(e){document.documentElement.classList.add('dark');}})();`,
+          }}
+        />
+      </head>
+      <body className={`${geistSans.variable} ${geistMono.variable} min-h-full bg-background text-foreground selection:bg-primary selection:text-white`}>
         <Providers>
           {children}
         </Providers>
